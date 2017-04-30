@@ -1,199 +1,174 @@
+#pragma once
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>
 #include<time.h>
+#include "Functions.h"
+
 #define huo 2
 #define N 250
 #define MODE 1 //运行模式，如果为1显示详细信息，如果为2则不显示
 #define DISPLAY 0 //1表示显示每一步的运行，0则不现实
+
+extern FILE *fp;
+extern FILE *fq;
+extern FILE *fq1;
+extern FILE *fr;
+
+static int buzhou[5*N*N*N];
+static int bu;
 static int map[N][N];//静态变量
 static int move[N+2][N+2];//记载状态，当1时为不可移动 (注意，和map相比，其边界横纵坐标都要加1)
 static double E;
 static double E2;
 static int s;
 
-FILE *fp;
-FILE *fq;
-FILE *fq1;
-FILE *fr;
-static int buzhou[5*N*N*N];
-static int bu;
-
-struct graph
-{
-int g[2][3];
-int step;
-int pre;
-int zong[20];
-struct graph*next;
-};
-
-
-
-
+struct graph;
+struct graph*operate(struct graph*p,struct graph*tail);
 
 //随机数产生器
-int ran()
-{
-int  num;
-num=16807*(s%127773)-2836*(s/127773);
-if (num<0) num=num+2147483647;
-return num;
-}
-//打印地图
-void printmap(FILE *fp)
-{
-int i,j;
-fprintf(fp,"-------------------\n");
-for(i=N-1;i>=0;i--)
-{
-  for(j=N-1;j>=0;j--)
-  {
-    if(map[i][j]!=0) fprintf(fp,"%5d",N*N-map[i][j]);
-    if(map[i][j]==0) fprintf(fp,"%5d",map[i][j]);
-  }
-  fprintf(fp,"\n");
-}
-fprintf(fp,"-------------------\n");
-}
-//在显示器上打印地图
-void printfmap()
-{
-int i,j;
-printf("-------------------\n");
-for(i=N-1;i>=0;i--)
-{
-   for(j=N-1;j>=0;j--)
-  {
-  if(map[i][j]!=0)  printf("%5d",N*N-map[i][j]);
-  if(map[i][j]==0)  printf("%5d",map[i][j]);
-   }
-  printf("\n");
-}
-printf("-------------------\n");
-system("cls");
+int ran() {
+    int  num;
+    num=16807*(s%127773)-2836*(s/127773);
+    if (num<0) num=num+2147483647;
+    return num;
 }
 
+//打印地图
+void printmap(FILE *fp) {
+    int i,j;
+    fprintf(fp,"-------------------\n");
+    for(i=N-1;i>=0;i--) {
+        for(j=N-1;j>=0;j--) {
+            if(map[i][j]!=0) fprintf(fp,"%5d",N*N-map[i][j]);
+            if(map[i][j]==0) fprintf(fp,"%5d",map[i][j]);
+        }
+    fprintf(fp,"\n");
+    }
+fprintf(fp,"-------------------\n");
+}
+
+
+//在显示器上打印地图
+void printfmap() {
+    int i,j;
+    printf("-------------------\n");
+    for(i=N-1;i>=0;i--) {
+       for(j=N-1;j>=0;j--) {
+          if(map[i][j]!=0)  printf("%5d",N*N-map[i][j]);
+          if(map[i][j]==0)  printf("%5d",map[i][j]);
+       }
+       printf("\n");
+    }
+    printf("-------------------\n");
+    system("cls");
+}
 
 //上下左右指令
-void up(int i,int j)
-{
+void up(int i,int j) {
 	if(map[i][j]!=0 || i+1>N  ) {printf("ERROR!!!\n");return;}
     map[i][j]=map[i+1][j];
     map[i+1][j]=0;
 	buzhou[bu]=1;
 	bu++;
 }
-void down(int i,int j)
-{
+
+void down(int i,int j) {
 	if(map[i][j]!=0 || i-1<0 ) {printf("ERROR!!!\n");return;}
     map[i][j]=map[i-1][j];
     map[i-1][j]=0;
 	buzhou[bu]=2;
 	bu++;
 }
-void right(int i,int j)
-{
+
+void right(int i,int j) {
 	if(map[i][j]!=0 || j+1>N ) {printf("ERROR!!!\n");return;}
     map[i][j]=map[i][j+1];
     map[i][j+1]=0;
 	buzhou[bu]=3;
 	bu++;
 }
-void left(int i,int j)
-{
+
+void left(int i,int j) {
 	if(map[i][j]!=0 || j-1<0 ) {printf("ERROR!!!\n");return;}
     map[i][j]=map[i][j-1];
     map[i][j-1]=0;
 	buzhou[bu]=4;
 	bu++;
 }
-//go函数，将0处的空格从（i0,j0）移动到（i1,j1）
 
-int step(int d1,int d2,int d3,int d4,int i,int j,int od)
-{
- i++;j++;
- if(DISPLAY==1) printfmap();
-add5:
- if(d1==1 && move[i+1][j]!=1 && od!=2) {up(i-1,j-1);return 1 ;}
- if(d1==2 && move[i-1][j]!=1 && od!=1) {down(i-1,j-1);return 2 ;}
- if(d1==3 && move[i][j-1]!=1 && od!=4) {left(i-1,j-1);return 3;}
- if(d1==4 && move[i][j+1]!=1 && od!=3) {right(i-1,j-1);return 4;}
- if(d2==1 && move[i+1][j]!=1 && od!=2) {up(i-1,j-1);return 1;}
- if(d2==2 && move[i-1][j]!=1 && od!=1) {down(i-1,j-1);return 2;}
- if(d2==3 && move[i][j-1]!=1 && od!=4) {left(i-1,j-1);return 3;}
- if(d2==4 && move[i][j+1]!=1 && od!=3) {right(i-1,j-1);return 4;}
- if(d3==1 && move[i+1][j]!=1 && od!=2) {up(i-1,j-1);return 1;}
- if(d3==2 && move[i-1][j]!=1 && od!=1) {down(i-1,j-1);return 2;}
- if(d3==3 && move[i][j-1]!=1 && od!=4) {left(i-1,j-1);return 3;}
- if(d3==4 && move[i][j+1]!=1 && od!=3) {right(i-1,j-1);return 4;}
- if(d4==1 && move[i+1][j]!=1 && od!=2) {up(i-1,j-1);return 1;}
- if(d4==2 && move[i-1][j]!=1 && od!=1) {down(i-1,j-1);return 2;}
- if(d4==3 && move[i][j-1]!=1 && od!=4) {left(i-1,j-1);return 3;}
- if(d4==4 && move[i][j+1]!=1 && od!=3) {right(i-1,j-1);return 4;}
+//go函数，将0处的空格从（i0,j0）移动到（i1,j1）
+int step(int d1,int d2,int d3,int d4,int i,int j,int od) {
+    i++;j++;
+    if(DISPLAY==1) printfmap();
+    add5:
+        if(d1==1 && move[i+1][j]!=1 && od!=2) {up(i-1,j-1);return 1 ;}
+        if(d1==2 && move[i-1][j]!=1 && od!=1) {down(i-1,j-1);return 2 ;}
+        if(d1==3 && move[i][j-1]!=1 && od!=4) {left(i-1,j-1);return 3;}
+        if(d1==4 && move[i][j+1]!=1 && od!=3) {right(i-1,j-1);return 4;}
+        if(d2==1 && move[i+1][j]!=1 && od!=2) {up(i-1,j-1);return 1;}
+        if(d2==2 && move[i-1][j]!=1 && od!=1) {down(i-1,j-1);return 2;}
+        if(d2==3 && move[i][j-1]!=1 && od!=4) {left(i-1,j-1);return 3;}
+        if(d2==4 && move[i][j+1]!=1 && od!=3) {right(i-1,j-1);return 4;}
+        if(d3==1 && move[i+1][j]!=1 && od!=2) {up(i-1,j-1);return 1;}
+        if(d3==2 && move[i-1][j]!=1 && od!=1) {down(i-1,j-1);return 2;}
+        if(d3==3 && move[i][j-1]!=1 && od!=4) {left(i-1,j-1);return 3;}
+        if(d3==4 && move[i][j+1]!=1 && od!=3) {right(i-1,j-1);return 4;}
+        if(d4==1 && move[i+1][j]!=1 && od!=2) {up(i-1,j-1);return 1;}
+        if(d4==2 && move[i-1][j]!=1 && od!=1) {down(i-1,j-1);return 2;}
+        if(d4==3 && move[i][j-1]!=1 && od!=4) {left(i-1,j-1);return 3;}
+        if(d4==4 && move[i][j+1]!=1 && od!=3) {right(i-1,j-1);return 4;}
  //printf("卡住了，出现错误。\n");
- od=0;
- goto add5;
+    od=0;
+    goto add5;
 }
 
 //go函数，将空格从一个位置移到另一个位置
-void go(int i0,int j0,int i1,int j1)
-{
-int i=i0,j=j0,d=0,r=0;
-if(map[i0][j0]!=0) 
-{
-	printf("ERROR2!!!\n");
-	return;
-    for(i=0;i<N;i++)
-	{
-	 for(j=0;j<N;j++)
-	 {
-		 if(map[i][j]==0) goto add3;
-	 }
+void go(int i0,int j0,int i1,int j1) {
+    int i=i0,j=j0,d=0,r=0;
+    if(map[i0][j0]!=0) {
+	    printf("ERROR2!!!\n");
+	    return;
+    
+        for(i=0;i<N;i++) {
+	        for(j=0;j<N;j++) {
+		        if(map[i][j]==0) goto add3;
+	        }
+        }  
+    }
+
+    add3:
+    if(i0==i1 && j0==j1) return ;
+    if(i1-i==2 && j1==0 && j!=j1) {
+	    if(move[i+2][j+1]!=1) {up(i,j);i++;}
 	}
-}
-add3:
+    
+    while(i!=i1 || j!=j1) {
+    if(i<i1 && j<j1) d=step(4,1,3,2,i,j,d); 
+    if(i>i1 && j<j1) d=step(2,4,1,3,i,j,d); 
+    if(i<i1 && j>j1) d=step(3,1,2,4,i,j,d); 
+    if(i>i1 && j>j1) d=step(3,2,4,1,i,j,d);
+    if(i==i1 && j>j1) d=step(3,1,2,4,i,j,d);
+    if(i==i1 && j<j1) d=step(4,2,1,3,i,j,d);
+    if(i>i1 && j==j1) d=step(2,4,3,1,i,j,d);
+    if(i<i1 && j==j1) d=step(1,4,3,2,i,j,d);
+    if(d==1) i++;
+    if(d==2) i--;
+    if(d==3) j--;
+    if(d==4) j++;
+    r++;
 
-if(i0==i1 && j0==j1) return ;
-
-if(i1-i==2 && j1==0 && j!=j1) 
-{
-	if(move[i+2][j+1]!=1)	{up(i,j);i++;}
-	
-}
-
- while(i!=i1 || j!=j1)
- {
-
- if(i<i1 && j<j1) d=step(4,1,3,2,i,j,d); 
- if(i>i1 && j<j1) d=step(2,4,1,3,i,j,d); 
- if(i<i1 && j>j1) d=step(3,1,2,4,i,j,d); 
- if(i>i1 && j>j1) d=step(3,2,4,1,i,j,d);
- if(i==i1 && j>j1) d=step(3,1,2,4,i,j,d);
- if(i==i1 && j<j1) d=step(4,2,1,3,i,j,d);
- if(i>i1 && j==j1) d=step(2,4,3,1,i,j,d);
- if(i<i1 && j==j1) d=step(1,4,3,2,i,j,d);
-
- if(d==1) i++;
- if(d==2) i--;
- if(d==3) j--;
- if(d==4) j++;
-r++;
-if(r>2*N)
-{
- printf("由于程序陷入死循环，被迫终止\n");
- printmap(fp);
- exit(0);
- 
-}
- }
-
-
+    if(r>2*N) {
+        printf("由于程序陷入死循环，被迫终止\n");
+        printmap(fp);
+        exit(0);
+        }
+    }
 }
 
 //功能函数，要求把制定的格子向上移动
-void moveup(int i,int j,int i1,int j1)
-{
+void moveup(int i,int j,int i1,int j1) {
   //(i,j)是空格所在的坐标，(i1,j1)是要移动的块的所在的坐标
   move[i1+1][j1+1]=1;
   go(i,j,i1+1,j1);
@@ -201,8 +176,7 @@ void moveup(int i,int j,int i1,int j1)
   move[i1+1][j1+1]=0;
 }
 
-void movedown(int i,int j,int i1,int j1)
-{
+void movedown(int i,int j,int i1,int j1) {
   //(i,j)是空格所在的坐标，(i1,j1)是要移动的块的所在的坐标
   move[i1+1][j1+1]=1;
   go(i,j,i1-1,j1);
@@ -210,10 +184,7 @@ void movedown(int i,int j,int i1,int j1)
   move[i1+1][j1+1]=0;
 }
 
-
-
-void moveleft(int i,int j,int i1,int j1)
-{
+void moveleft(int i,int j,int i1,int j1) {
   //(i,j)是空格所在的坐标，(i1,j1)是要移动的块的所在的坐标
   move[i1+1][j1+1]=1;
   go(i,j,i1,j1-1);
@@ -221,11 +192,8 @@ void moveleft(int i,int j,int i1,int j1)
   move[i1+1][j1+1]=0;
 }
 
-
-
 //功能函数，要求把制定的格子向右移动
-void moveright(int i,int j,int i1,int j1)
-{
+void moveright(int i,int j,int i1,int j1) {
   //(i,j)是空格所在的坐标，(i1,j1)是要移动的块的所在的坐标
   move[i1+1][j1+1]=1;
   go(i,j,i1,j1+1);
@@ -233,114 +201,92 @@ void moveright(int i,int j,int i1,int j1)
   move[i1+1][j1+1]=0;
 }
 
-
 //功能函数，将序号为n的块移到正确的位置
-int moveto(int n,int i,int j,int mode,FILE *fp)
-{
-   if(map[n/N][n%N]==n) 	  return 0;
+int moveto(int n,int i,int j,int mode,FILE *fp) {
+   int x,y,k,r,l;
+   if(map[n/N][n%N]==n) return 0;
 	//注意这里x是纵坐标，y是横坐标，和习惯正好相反，不要弄混了！
-   int x,y,k,r,l=n%N;
+   x,y,k,r,l=n%N;
   //(i,j)是空格所在的目标，n是要移动的块序号，mode是模式
-	for(x=0;x<N;x++)
-	{
-	 for(y=0;y<N;y++)
-	 {
+	for(x=0;x<N;x++) {
+        for(y=0;y<N;y++) {
 		 if(map[x][y]==n) goto add1;
-	 }
-	}
+         }
+    }
 	//（x,y）表示要移动的块的起始坐标
    
-
-add1:  
-
-     if(mode==1) //第一模式，先横向移动后纵向移动
-	  {
-		  //
-	    if(y>(n%N) )
-		{
+    add1:  
+     if(mode==1) {//第一模式，先横向移动后纵向移动
+	    if(y>(n%N)) {
 			for(k=y;k>(n%N);k--) {moveleft(i,j,x,k);i=x;j=k;}
 			r=4;
 		}
 		
-	    if(y<(n%N))
-		{
+	    if(y<(n%N)) {
 			for(k=y;k<(n%N);k++) {moveright(i,j,x,k);i=x;j=k;}
 			r=3;
 		}
+
 	//	printmap(fp);
 		for(k=x;k<(n/N);k++) {moveup(i,j,k,n%N);i=k;j=n%N;r=2;}
-	
-	  }
+	}
 
-	  if(mode==2) //第二模式，先纵向移动后横向移动
-	  {
-		  //
-	    if(x>(n/N) )
-		{
+	if(mode==2) { //第二模式，先纵向移动后横向移动
+	    if(x>(n/N)) {
 			for(k=x;k>(n/N);k--) {movedown(i,j,k,y);i=k;j=y;}
 			r=1;
 		}
-	    if(x<(n/N))
-		{
+	    
+        if(x<(n/N)) {
 			for(k=x;k<(n/N);k++) {moveup(i,j,k,y);i=k;j=y;}
 			r=2;
 		}
-		for(k=y;k<(n%N);k++) {moveright(i,j,(n/N),k);i=n/N;j=k;r=3;}
+		
+        for(k=y;k<(n%N);k++) {moveright(i,j,(n/N),k);i=n/N;j=k;r=3;}
 	
-	  }
-	  if(mode==3) //第三模式，把最上右边的格子插进去
-	  {
-		  
-		  if(map[n/N-1][n%N]==n && i==n/N && j==n%N)
-		  {
+    }
+    
+    if(mode==3) { //第三模式，把最上右边的格子插进去
+        if(map[n/N-1][n%N]==n && i==n/N && j==n%N) {
 		      down(i,j);i--;
-		  }
+        }
 
+        for(k=y;k<(n%N);k++) {moveright(i,j,x,k);i=x;j=k;}
+	    for(k=x;k<(n/N)-1;k++) {moveup(i,j,k,n%N);i=k;j=n%N;}
+        go(i,j,n/N-1,l-2);
+	    i=n/N-1;j=l-2;
+	    up(i,j);i++;
+	    right(i,j);j++;
+	    right(i,j);j++;
+	    down(i,j);i--;
+	    left(i,j);j--;
+	    up(i,j);i++;
+	    left(i,j);j--;
+	    down(i,j);i--;
+    }
 	  
-	  for(k=y;k<(n%N);k++) {moveright(i,j,x,k);i=x;j=k;}
-	  for(k=x;k<(n/N)-1;k++) {moveup(i,j,k,n%N);i=k;j=n%N;}
-      go(i,j,n/N-1,l-2);
-	  i=n/N-1;j=l-2;
-	  up(i,j);i++;
-	  right(i,j);j++;
-	  right(i,j);j++;
-	  down(i,j);i--;
-	  left(i,j);j--;
-	  up(i,j);i++;
-	  left(i,j);j--;
-	  down(i,j);i--;
-	  }
-	  
-	  if(mode==4) //第四模式，把最下右表的格子插进去
-	  {
-		  printmap(fp);
+    if(mode==4) { //第四模式，把最下右表的格子插进去
+    printmap(fp);
 		  
-	  for(k=x;k>0;k--) {movedown(i,j,k,y);i=k;j=y;}
-      for(k=y;k<(n%N)-1;k++) {moveright(i,j,0,k);i=0;j=k;}
-	  if(map[i][j+1]==n) {up(i,j);i++;}
-	  if(map[i][j-1]==n) {left(i,j);return 3;}
-//	  printmap(fp);
-	  go(i,j,2,l-1);i=2;j=l-1;
-	  right(i,j);j++;
-	  down(i,j);i--;
-	  down(i,j);i--;
-	  left(i,j);j--;
-	  up(i,j);i++;
-	  right(i,j);j++;
-	  up(i,j);i++;
-	  left(i,j);j--;
-	  }
-	  
-	  
-	  
-  
-
+	    for(k=x;k>0;k--) {movedown(i,j,k,y);i=k;j=y;}
+        for(k=y;k<(n%N)-1;k++) {moveright(i,j,0,k);i=0;j=k;}
+	    if(map[i][j+1]==n) {up(i,j);i++;}
+	    if(map[i][j-1]==n) {left(i,j);return 3;}
+//	    printmap(fp);
+	    go(i,j,2,l-1);i=2;j=l-1;
+	    right(i,j);j++;
+	    down(i,j);i--;
+	    down(i,j);i--;
+	    left(i,j);j--;
+	    up(i,j);i++;
+	    right(i,j);j++;
+	    up(i,j);i++;
+	    left(i,j);j--;
+    }
 return r;
 }
 
-
-void arrangeline(int l,int mode,FILE *fp)
-{
+void arrangeline(int l,int mode,FILE *fp) {
 
 int i,j,k,t; //i,j记载空格的位置
 for(i=0;i<N;i++)
@@ -411,35 +357,23 @@ return ;
 
 
 
-
-struct graph*operate(struct graph*p,struct graph*tail );
-
-
-
 //last函数，专门处理最后六步
-void last()
-{
-
-int i,j,m;
-struct graph*tail;
-struct graph*p;
-
-tail=(struct graph*)malloc(sizeof(struct graph));
-p=tail;
-tail->step=0;
-   for(i=0;i<2;i++)
-   {
-     for(j=0;j<3;j++)
-	 {
-	 tail->g[i][j]=map[i][j];
-	 }
+void last() {
+    int i,j,m;
+    struct graph*tail;
+    struct graph*p;
+    tail=(struct graph*)malloc(sizeof(struct graph));
+    p=tail;
+    tail->step=0;
+   for(i=0;i<2;i++) {
+     for(j=0;j<3;j++) {
+         tail->g[i][j]=map[i][j];
+     }
    }
 
 m=0;
 
-
-while(p->step<28)
-{
+    while(p->step<28) {
 
 tail=operate(p,tail);
 if(tail==NULL) break;
@@ -454,8 +388,7 @@ p=p->next;
 }
 
 //成功函数
-void success(int zong[],int step,int final)
-{
+void success(int zong[],int step,int final) {
 int i,j,k;
 zong[step]=final;
 for(i=0;i<2;i++)
@@ -478,10 +411,37 @@ add4:
 return ;
 }
 
+//请为这个函数添加注释，谢谢
+void modify() {
+  int tmap[N][N],i,j;
+  for(i=0;i<N;i++)
+  {
+	  for(j=0;j<N;j++)
+	  {
+		 if(map[i][j]==0) tmap[N-1-i][N-1-j]=map[i][j];
+	     if(map[i][j]!=0) tmap[N-1-i][N-1-j]=16-map[i][j];         
+	  }
+  }
+  for(i=0;i<N;i++)
+  {
+     for(j=0;j<N;j++)
+	 {
+	   map[i][j]=tmap[i][j];	 
+	 }
+  }
+
+}
+
+struct graph {
+    int g[2][3];
+    int step;
+    int pre;
+    int zong[20];
+    struct graph*next;
+};
 
 //后面四个分别代表向上，向下，向左，向右操作
-struct graph* up(int i,int j,struct graph*p)
-{
+struct graph* up(int i,int j,struct graph*p) {
 struct graph*q;
 q=(struct graph*)malloc(sizeof(struct graph));
 int i0,j0,temp;
@@ -503,15 +463,12 @@ for(i0=0;i0<2;i0++)
  return q;
 }
 
-struct graph* down(int i,int j,struct graph*p)
-{
-struct graph*q;
-q=(struct graph*)malloc(sizeof(struct graph));
-int i0,j0,temp;
-for(i0=0;i0<2;i0++)
-{
-  for(j0=0;j0<3;j0++)
-  {
+struct graph* down(int i,int j,struct graph*p) {
+  struct graph*q;
+  q=(struct graph*)malloc(sizeof(struct graph));
+  int i0,j0,temp;
+  for(i0=0;i0<2;i0++) {
+    for(j0=0;j0<3;j0++) {
    q->g[i0][j0]=p->g[i0][j0];
   }
 }
@@ -521,9 +478,7 @@ for(i0=0;i0<2;i0++)
  q->step=p->step+1; //步数加1
 
  if(q->g[0][0]==0 && q->g[0][1]==1 && q->g[0][2]==2 && q->g[1][0]==N) {success(p->zong,q->step,2);return NULL ;}
-  
-   
- 
+
  q->pre=2; //上一步的方向记为向下
  for(i0=1;i0<q->step;i0++) q->zong[i0]=p->zong[i0];
  q->zong[q->step]=2;//记录具体的路径数
@@ -531,8 +486,7 @@ for(i0=0;i0<2;i0++)
  return q;
 }
 
-struct graph* left(int i,int j,struct graph*p)
-{
+struct graph* left(int i,int j,struct graph*p) {
 struct graph*q;
 q=(struct graph*)malloc(sizeof(struct graph));
 int i0,j0,temp;
@@ -579,16 +533,9 @@ for(i0=0;i0<2;i0++)
  return q;
 }
 
-
 //operate函数，功能p是展开操作的指针，tail是该队列的尾巴指针.
-struct graph* operate(struct graph*p,struct graph*tail)
-{
+struct graph* operate(struct graph*p,struct graph*tail) {
   int i,j,k=0;
-  
-
-
-
-
   for(i=0;i<2;i++)
   {
    for(j=0;j<3;j++)
@@ -628,37 +575,8 @@ if(j!=2 && p->pre!=3)
 return tail;//返回尾指针
 }
 
-
-
-
-
-void modify()
-{
-  int tmap[N][N],i,j;
-  for(i=0;i<N;i++)
-  {
-	  for(j=0;j<N;j++)
-	  {
-		 if(map[i][j]==0) tmap[N-1-i][N-1-j]=map[i][j];
-	     if(map[i][j]!=0) tmap[N-1-i][N-1-j]=16-map[i][j];         
-	  }
-  }
-  for(i=0;i<N;i++)
-  {
-     for(j=0;j<N;j++)
-	 {
-	   map[i][j]=tmap[i][j];	 
-	 }
-  }
-
-}
-
-
-
-
-int main()
-{
-fp=fopen("xuhao.txt","w");
+int mainProgram() {
+    fp=fopen("xuhao.txt","w");
 fq=fopen("空格移动方向.txt","w");
 fq1=fopen("图块移动方向.txt","w");
 fr=fopen("original.txt","r");
