@@ -3,12 +3,17 @@
 #include<stdlib.h>
 #include<math.h>
 #include<time.h>
+#define huo 2
+#define N 250
+#define MODE 1 //运行模式，如果为1显示详细信息，如果为2则不显示
+#define DISPLAY 0 //1表示显示每一步的运行，0则不现实
 
 FILE *fp;
 FILE *fq;
 FILE *fq1;
 FILE *fr;
 
+struct graph* down(int i, int j, struct graph*p);
 int ran();
 void printmap(FILE *fp);
 void printfmap();
