@@ -1,0 +1,99 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.out
+*.app
+*.bat
+
+#JetBrain's Stuff
+.idea/*
+cmake-build-debug/*
+
+## Ignore Visual Studio temporary files, build results, and files
+
+# User-specific files
+*.suo
+*.user
+*.sln.docstates
+
+# Build results
+
+[Dd]ebug/
+[Rr]elease/
+x64/
+build/
+[Bb]in/
+[Oo]bj/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+*_i.c
+*_p.c
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.log
+*.scc
+
+# =========================
+# Windows detritus
+# =========================
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+#Visual Studio Files in C++
+*.VC.db
+*.VC.opendb
+*.ipch
+*.sln
+*.vcxproj*
+src/.vs/*
